@@ -1,0 +1,480 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="color-scheme" content="light dark" />
+  <meta name="theme-color" content="#184f3a" />
+  <link rel="icon" href="data:," />
+  <title>Dice Roller</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@500;600;700&family=Literata:opsz,wght@7..72,700&display=swap');
+
+    :root {
+      color-scheme: light dark;
+      --felt: #176044;
+      --felt-deep: #0f4834;
+      --felt-line: rgba(255,255,255,.075);
+      --ink: #f8f5e9;
+      --muted: #c4d6cc;
+      --gold: #e8b84f;
+      --gold-dark: #b87c18;
+      --die: #fffdf7;
+      --pip: #183128;
+      --panel: rgba(8, 43, 31, .58);
+      --panel-border: rgba(255,255,255,.13);
+      --shadow: rgba(3, 24, 17, .35);
+      --focus: #ffe29a;
+    }
+
+    @media (prefers-color-scheme: light) {
+      :root {
+        --felt: #287a59;
+        --felt-deep: #185d43;
+        --muted: #e1eee7;
+        --panel: rgba(13, 72, 51, .45);
+        --shadow: rgba(6, 41, 29, .28);
+      }
+    }
+
+    * { box-sizing: border-box; }
+
+    html { min-height: 100%; background: var(--felt-deep); }
+
+    body {
+      margin: 0;
+      min-height: 100svh;
+      color: var(--ink);
+      font-family: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+      background:
+        radial-gradient(circle at 50% 8%, rgba(255,255,255,.08), transparent 34rem),
+        repeating-linear-gradient(105deg, transparent 0 8px, var(--felt-line) 9px, transparent 10px 18px),
+        linear-gradient(155deg, var(--felt), var(--felt-deep));
+      overflow-x: hidden;
+    }
+
+    button { font: inherit; }
+
+    main {
+      width: min(100%, 760px);
+      min-height: 100svh;
+      margin: 0 auto;
+      padding: max(32px, env(safe-area-inset-top)) 20px max(28px, env(safe-area-inset-bottom));
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .intro { text-align: center; }
+
+    h1 {
+      margin: 0;
+      font: 700 clamp(2.15rem, 8vw, 3.8rem)/1.03 "Literata", Georgia, serif;
+      letter-spacing: -.045em;
+    }
+
+    .subtitle {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: .98rem;
+    }
+
+    .table {
+      width: 100%;
+      min-height: 330px;
+      margin: 28px 0 22px;
+      padding: 28px 18px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--panel-border);
+      border-radius: 32px;
+      background: var(--panel);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 22px 55px var(--shadow);
+    }
+
+    #dice {
+      width: 100%;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      gap: clamp(12px, 3vw, 22px);
+    }
+
+    .die {
+      --die-size: clamp(104px, 32vw, 152px);
+      width: var(--die-size);
+      height: var(--die-size);
+      padding: 17%;
+      position: relative;
+      display: grid;
+      grid-template: repeat(3, 1fr) / repeat(3, 1fr);
+      border: 1px solid rgba(24,49,40,.18);
+      border-radius: 24%;
+      background: linear-gradient(145deg, #ffffff, var(--die) 61%, #e6e1d3);
+      box-shadow: 0 13px 0 #cfcbbe, 0 20px 28px rgba(0,0,0,.27), inset 0 2px 3px rgba(255,255,255,.95);
+      transform: translateY(-6px) rotate(var(--tilt, -2deg));
+    }
+
+    .die.small { --die-size: clamp(82px, 23vw, 118px); }
+    .die.tiny { --die-size: clamp(70px, 19vw, 100px); }
+
+    .pip {
+      width: 42%;
+      aspect-ratio: 1;
+      place-self: center;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 30%, #365c4d, var(--pip) 64%);
+      box-shadow: inset 0 2px 2px rgba(0,0,0,.32), 0 1px 0 rgba(255,255,255,.35);
+    }
+
+    .die.rolling { animation: tumble .52s cubic-bezier(.2,.72,.25,1); }
+    .die:nth-child(even) { --tilt: 2.5deg; }
+    .die:nth-child(3n) { --tilt: -1deg; }
+
+    @keyframes tumble {
+      0% { transform: translateY(-6px) rotate(var(--tilt)); }
+      28% { transform: translateY(-38px) rotate(18deg) scale(.95); }
+      64% { transform: translateY(-3px) rotate(-8deg) scale(1.03); }
+      82% { transform: translateY(-11px) rotate(4deg); }
+      100% { transform: translateY(-6px) rotate(var(--tilt)); }
+    }
+
+    .total {
+      margin-top: 30px;
+      min-height: 34px;
+      display: flex;
+      align-items: baseline;
+      justify-content: center;
+      gap: 8px;
+      color: var(--muted);
+      font-size: .9rem;
+    }
+
+    .total strong {
+      color: var(--ink);
+      font: 700 2rem/1 "Literata", Georgia, serif;
+    }
+
+    .controls {
+      width: min(100%, 540px);
+      display: grid;
+      gap: 14px;
+    }
+
+    .count-control {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+    }
+
+    .count-label { color: var(--muted); font-size: .92rem; }
+
+    .stepper {
+      display: grid;
+      grid-template-columns: 42px 40px 42px;
+      align-items: center;
+      min-height: 42px;
+      border: 1px solid var(--panel-border);
+      border-radius: 14px;
+      background: rgba(7,41,29,.35);
+      overflow: hidden;
+    }
+
+    .stepper button {
+      height: 42px;
+      border: 0;
+      background: transparent;
+      color: var(--ink);
+      cursor: pointer;
+      font-size: 1.35rem;
+      line-height: 1;
+    }
+
+    .stepper button:hover { background: rgba(255,255,255,.08); }
+    .stepper button:disabled { opacity: .3; cursor: default; }
+    #count { text-align: center; font-weight: 700; }
+
+    #roll {
+      min-height: 62px;
+      border: 1px solid rgba(255,243,199,.65);
+      border-radius: 18px;
+      color: #2c2109;
+      background: linear-gradient(#f5cc6d, var(--gold));
+      box-shadow: 0 7px 0 var(--gold-dark), 0 14px 26px rgba(0,0,0,.22), inset 0 1px rgba(255,255,255,.65);
+      cursor: pointer;
+      font-size: 1.08rem;
+      font-weight: 800;
+      letter-spacing: .01em;
+      transform: translateY(-3px);
+      transition: transform .12s, box-shadow .12s, filter .15s;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    #roll:hover { filter: brightness(1.06); }
+    #roll:active {
+      transform: translateY(4px);
+      box-shadow: 0 1px 0 var(--gold-dark), 0 5px 12px rgba(0,0,0,.2);
+    }
+
+    button:focus-visible {
+      outline: 3px solid var(--focus);
+      outline-offset: 3px;
+    }
+
+    .hint {
+      margin: 14px 0 0;
+      color: var(--muted);
+      font-size: .78rem;
+      text-align: center;
+    }
+
+    .history-wrap {
+      width: min(100%, 540px);
+      margin-top: auto;
+      padding-top: 30px;
+    }
+
+    .history-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .history-head h2 {
+      margin: 0;
+      font-size: .82rem;
+      color: var(--muted);
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+    }
+
+    #clear {
+      padding: 5px 0;
+      border: 0;
+      color: var(--muted);
+      background: transparent;
+      cursor: pointer;
+      font-size: .8rem;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    #history {
+      margin: 0;
+      padding: 0;
+      display: grid;
+      gap: 7px;
+      list-style: none;
+    }
+
+    .history-item {
+      min-height: 40px;
+      padding: 8px 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-radius: 11px;
+      background: rgba(5,38,27,.28);
+      color: var(--muted);
+      font-size: .84rem;
+    }
+
+    .history-item:first-child { color: var(--ink); background: rgba(255,255,255,.09); }
+    .history-values { flex: 1; letter-spacing: .08em; }
+    .history-total { font-weight: 800; color: var(--ink); }
+    .empty { color: var(--muted); font-size: .84rem; text-align: center; padding: 9px; }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0,0,0,0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    @media (max-width: 500px) {
+      main { padding-left: 16px; padding-right: 16px; }
+      .table { min-height: 292px; margin-top: 23px; padding: 25px 10px; border-radius: 26px; }
+      #dice { gap: 13px; }
+      .die { box-shadow: 0 9px 0 #cfcbbe, 0 15px 23px rgba(0,0,0,.25), inset 0 2px 3px rgba(255,255,255,.95); }
+      .total { margin-top: 24px; }
+      .history-wrap { padding-top: 28px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; }
+      .die.rolling { animation: none; }
+      #roll { transition: none; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header class="intro">
+      <h1>Roll the dice</h1>
+      <p class="subtitle">Leave the next move to chance.</p>
+    </header>
+
+    <section class="table" aria-label="Dice result">
+      <div>
+        <div id="dice" aria-hidden="true"></div>
+        <div class="total" id="total"></div>
+      </div>
+    </section>
+
+    <section class="controls" aria-label="Roll controls">
+      <div class="count-control">
+        <span class="count-label">Number of dice</span>
+        <div class="stepper" role="group" aria-label="Number of dice">
+          <button id="minus" type="button" aria-label="Remove one die">−</button>
+          <span id="count" aria-live="polite">1</span>
+          <button id="plus" type="button" aria-label="Add one die">+</button>
+        </div>
+      </div>
+      <button id="roll" type="button">Roll</button>
+    </section>
+
+    <p class="hint">Tap Roll or press the space bar</p>
+    <div id="announcement" class="sr-only" aria-live="polite"></div>
+
+    <section class="history-wrap" aria-labelledby="history-title">
+      <div class="history-head">
+        <h2 id="history-title">Recent rolls</h2>
+        <button id="clear" type="button" hidden>Clear</button>
+      </div>
+      <ol id="history"><li class="empty">Your rolls will appear here.</li></ol>
+    </section>
+  </main>
+
+  <script>
+    (function () {
+      'use strict';
+
+      var positions = {
+        1: [5],
+        2: [1, 9],
+        3: [1, 5, 9],
+        4: [1, 3, 7, 9],
+        5: [1, 3, 5, 7, 9],
+        6: [1, 3, 4, 6, 7, 9]
+      };
+      var count = 1;
+      var values = [6];
+      var history = [];
+      var rolling = false;
+      var diceEl = document.getElementById('dice');
+      var totalEl = document.getElementById('total');
+      var countEl = document.getElementById('count');
+      var minus = document.getElementById('minus');
+      var plus = document.getElementById('plus');
+      var rollButton = document.getElementById('roll');
+      var historyEl = document.getElementById('history');
+      var clearButton = document.getElementById('clear');
+      var announcement = document.getElementById('announcement');
+
+      function randomDie() {
+        if (window.crypto && window.crypto.getRandomValues) {
+          var bytes = new Uint8Array(1);
+          do { window.crypto.getRandomValues(bytes); } while (bytes[0] > 251);
+          return (bytes[0] % 6) + 1;
+        }
+        return Math.floor(Math.random() * 6) + 1;
+      }
+
+      function makeDie(value, animate) {
+        var die = document.createElement('div');
+        die.className = 'die' + (count >= 3 ? ' small' : '') + (count >= 5 ? ' tiny' : '') + (animate ? ' rolling' : '');
+        die.setAttribute('data-value', String(value));
+        die.setAttribute('aria-label', String(value));
+        positions[value].forEach(function (position) {
+          var pip = document.createElement('span');
+          pip.className = 'pip';
+          pip.style.gridArea = Math.ceil(position / 3) + ' / ' + (((position - 1) % 3) + 1);
+          die.appendChild(pip);
+        });
+        return die;
+      }
+
+      function drawDice(animate) {
+        diceEl.replaceChildren();
+        values.forEach(function (value, index) {
+          var die = makeDie(value, animate);
+          die.style.animationDelay = (index * 45) + 'ms';
+          diceEl.appendChild(die);
+        });
+        var sum = values.reduce(function (a, b) { return a + b; }, 0);
+        totalEl.innerHTML = count > 1 ? '<span>Total</span><strong>' + sum + '</strong>' : '';
+      }
+
+      function updateCount() {
+        countEl.textContent = String(count);
+        minus.disabled = count === 1;
+        plus.disabled = count === 2;
+        values = Array.from({ length: count }, function (_, i) { return values[i] || randomDie(); });
+        drawDice(false);
+      }
+
+      function renderHistory() {
+        if (!history.length) {
+          historyEl.innerHTML = '<li class="empty">Your rolls will appear here.</li>';
+          clearButton.hidden = true;
+          return;
+        }
+        historyEl.replaceChildren();
+        history.forEach(function (entry) {
+          var item = document.createElement('li');
+          item.className = 'history-item';
+          var vals = document.createElement('span');
+          vals.className = 'history-values';
+          vals.textContent = entry.values.join('  ·  ');
+          var total = document.createElement('span');
+          total.className = 'history-total';
+          total.textContent = entry.values.length > 1 ? '= ' + entry.total : String(entry.total);
+          item.append(vals, total);
+          historyEl.appendChild(item);
+        });
+        clearButton.hidden = false;
+      }
+
+      function roll() {
+        if (rolling) return;
+        rolling = true;
+        rollButton.textContent = 'Rolling…';
+        values = Array.from({ length: count }, randomDie);
+        drawDice(true);
+        window.setTimeout(function () {
+          var sum = values.reduce(function (a, b) { return a + b; }, 0);
+          history.unshift({ values: values.slice(), total: sum });
+          history = history.slice(0, 5);
+          renderHistory();
+          announcement.textContent = count === 1 ? 'You rolled ' + values[0] : 'You rolled ' + values.join(', ') + '. Total ' + sum;
+          rollButton.textContent = 'Roll again';
+          rolling = false;
+        }, 620 + (count * 45));
+      }
+
+      minus.addEventListener('click', function () { if (count > 1) { count -= 1; updateCount(); } });
+      plus.addEventListener('click', function () { if (count < 2) { count += 1; updateCount(); } });
+      rollButton.addEventListener('click', roll);
+      clearButton.addEventListener('click', function () { history = []; renderHistory(); });
+      document.addEventListener('keydown', function (event) {
+        if (event.code === 'Space' && event.target === document.body) {
+          event.preventDefault();
+          roll();
+        }
+      });
+
+      updateCount();
+    }());
+  </script>
+</body>
+</html>
