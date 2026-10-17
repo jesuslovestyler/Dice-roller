@@ -55,6 +55,29 @@
 
     button { font: inherit; }
 
+    .home-link {
+      position: fixed;
+      top: max(12px, env(safe-area-inset-top));
+      left: 12px;
+      z-index: 10;
+      padding: 7px 14px;
+      border: 1px solid var(--panel-border);
+      border-radius: 999px;
+      background: var(--panel);
+      color: var(--ink);
+      font-size: .82rem;
+      font-weight: 600;
+      text-decoration: none;
+      box-shadow: 0 6px 18px var(--shadow);
+    }
+
+    .home-link:hover { background: rgba(255,255,255,.14); }
+
+    .home-link:focus-visible {
+      outline: 3px solid var(--focus);
+      outline-offset: 3px;
+    }
+
     main {
       width: min(100%, 760px);
       min-height: 100svh;
@@ -318,6 +341,7 @@
   </style>
 </head>
 <body>
+  <a class="home-link" href="https://jesuslovestyler.com/">⌂ Home</a>
   <main>
     <header class="intro">
       <h1>Roll the dice</h1>
@@ -476,5 +500,6 @@
       updateCount();
     }());
   </script>
+  <script data-goatcounter="https://jesuslovestyler.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 </body>
 </html>
