@@ -1,20 +1,8 @@
-# Dice Roller Artifact
+# Dice Roller
 
-A dice roller web app, built with Noki — Tyler's SI agent — through artifact engineering: describing what you want in plain language and getting working software back.
+A dice roller: fair dice in your browser — roll one or many, for board games, classrooms, and quick decisions.
 
-## What it is
+**Live:** https://jesuslovestyler.github.io/Dice-roller/
+**Home:** https://jesuslovestyler.com/
 
-- Animated dice with a tactile table design
-- Roll one or two dice per throw
-- Automatic totals for multi-die rolls
-- Roll history (last five results, clearable)
-- Space bar rolls too
-- Follows your system's light or dark theme
-
-## Run it
-
-Just open `index.html` in any browser. No build step, no dependencies. Or enable GitHub Pages on this repo to host it live.
-
-## Built with
-
-Artifact engineering — natural language as a programming interface. Coined by Tyler, October 2026.
+One self-contained page: no account, no ads, nothing to buy. Released into the public domain (Unlicense — see LICENSE). Built by Tyler with Noki.
